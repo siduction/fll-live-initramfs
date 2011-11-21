@@ -1,0 +1,55 @@
+#!/bin/sh -e
+
+###############################################################################
+# F.U.L.L.S.T.O.R.Y initramfs-tools hook
+#
+# Copyright:	(C) 2007 Kel Modderman <kel@otaku42.de>
+#
+# License:	GPLv2
+#
+# F.U.L.L.S.T.O.R.Y Project Homepage:
+# http://developer.berlios.de/projects/fullstory
+###############################################################################
+
+# initramfs-tools prerequisite handling
+PREREQS="nbd lvm"
+
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case "$1" in
+	prereqs)
+		prereqs
+		exit 0
+		;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+[ -s /etc/default/distro ] || exit 0
+
+# distro-defaults
+install -m 0644 -D /etc/default/distro \
+	${DESTDIR}/etc/default/distro
+
+# filesystem unioning modules
+manual_add_modules unionfs
+manual_add_modules aufs
+
+# squashfs and loop
+manual_add_modules squashfs
+manual_add_modules loop
+
+# ms filesystem drivers
+manual_add_modules vfat
+manual_add_modules ntfs
+
+# needed for vfat and iso9660
+manual_add_modules nls_cp437
+manual_add_modules nls_utf8
+manual_add_modules nls_iso8859-1
+
+# ensure maximum hardware support
+auto_add_modules
