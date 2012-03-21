@@ -1,3 +1,12 @@
+fll-live-initramfs (2.6.4) UNRELEASED; urgency=low
+
+  * introduced  myself as Maintainer
+  * removed Stefan Lippers-Hollmann <s.l-h@gmx.de> from uploaders
+  * bump standards to 3.9.3
+  * debhelper (>=9)   
+
+ -- Alf Gaida <agaida@siduction.org>  Wed, 21 Mar 2012 11:26:13 +0100
+
 fll-live-initramfs (2.6.3) UNRELEASED; urgency=low
 
   * NOT RELEASED YET
