@@ -1,10 +1,10 @@
-fll-live-initramfs (2.6.5) UNRELEASED; urgency=low
+fll-live-initramfs (2.6.5) unstable; urgency=low
 
   * source override added to prevent lintian complaining aubout 
     XSBC_original-Maintainer
   * fixes #642
 
- -- Alf Gaida <agaida@siduction.org>  Thu, 22 Mar 2012 17:35:39 +0100
+ -- Alf Gaida <agaida@siduction.org>  Thu, 22 Mar 2012 17:38:24 +0100
 
 fll-live-initramfs (2.6.4) UNRELEASED; urgency=low
 
