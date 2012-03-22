@@ -1,3 +1,11 @@
+fll-live-initramfs (2.6.5) UNRELEASED; urgency=low
+
+  * source override added to prevent lintian complaining aubout 
+    XSBC_original-Maintainer
+  * fixes #642
+
+ -- Alf Gaida <agaida@siduction.org>  Thu, 22 Mar 2012 17:35:39 +0100
+
 fll-live-initramfs (2.6.4) UNRELEASED; urgency=low
 
   * introduced  myself as Maintainer
