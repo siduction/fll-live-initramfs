@@ -1,3 +1,9 @@
+fll-live-initramfs (2.6.8) unstable; urgency=low
+
+  * fixed another typo in debian/postinst
+
+ -- Torsten Wohlfarth <towo@siduction.org>  Wed, 27 Feb 2013 20:09:29 +0100
+
 fll-live-initramfs (2.6.7) unstable; urgency=low
 
   * fixed the typo in debian/postinst
