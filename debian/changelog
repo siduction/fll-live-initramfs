@@ -1,3 +1,15 @@
+fll-live-initramfs (2.6.7) unstable; urgency=low
+
+  * fixed the typo in debian/postinst
+
+ -- Torsten Wohlfarth <towo@siduction.org>  Wed, 27 Feb 2013 19:15:13 +0100
+
+fll-live-initramfs (2.6.6) unstable; urgency=low
+
+  * added a fix for not working usb-boot
+
+ -- Torsten Wohlfarth <towo@siduction.org>  Wed, 27 Feb 2013 18:53:23 +0100
+
 fll-live-initramfs (2.6.5) unstable; urgency=low
 
   * source override added to prevent lintian complaining aubout 
