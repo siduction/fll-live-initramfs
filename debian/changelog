@@ -1,3 +1,9 @@
+fll-live-initramfs (2.6.8.1) unstable; urgency=low
+
+  * add ehci-pci to modules to build in initramfs
+
+ -- Torsten Wohlfarth <towo@siduction.org>  Wed, 27 Feb 2013 21:00:41 +0100
+
 fll-live-initramfs (2.6.8) unstable; urgency=low
 
   * fixed another typo in debian/postinst
