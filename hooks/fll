@@ -34,6 +34,9 @@ esac
 install -m 0644 -D /etc/default/distro \
 	${DESTDIR}/etc/default/distro
 
+# usb subsystem
+manual_add_modules ehci-pci
+
 # filesystem unioning modules
 manual_add_modules unionfs
 manual_add_modules aufs

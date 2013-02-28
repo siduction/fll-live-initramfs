@@ -3,7 +3,6 @@
 set -e
 
 update_initramfs() {
-	echo 'xhci-hcd\nehci-pci\n' >> /etc/initramfs-tools/modules
   	if [ -x /usr/sbin/update-initramfs ] && \
 	   [ -e /etc/initramfs-tools/initramfs.conf ]; then
   		update-initramfs -u
