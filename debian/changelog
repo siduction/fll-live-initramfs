@@ -1,3 +1,11 @@
+fll-live-initramfs (2013.10.09) next; urgency=low
+
+  * sync with fullstory
+  * new numbering
+  * new copyright format
+
+ -- Alf Gaida <agaida@siduction.org>  Wed, 09 Oct 2013 21:25:12 +0200
+
 fll-live-initramfs (2.6.9) unstable; urgency=low
 
   * revert changes in debian/postinst
