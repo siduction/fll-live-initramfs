@@ -3,14 +3,14 @@ Section: misc
 Priority: extra
 Maintainer: Alf Gaida <agaida@siduction.org>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.4
-Vcs-Svn: svn://svn.berlios.de/fullstory/fll-live-initramfs/trunk
-Vcs-Browser: http://svn.berlios.de/wsvn/fullstory/fll-live-initramfs/trunk/
+Standards-Version: 3.9.5
+Vcs-git: git://github.com/fullstory/fll-live-initramfs.git
+Vcs-Browser: https://github.com/fullstory/fll-live-initramfs
 
 Package: fll-live-initramfs
 Architecture: all
 Depends: ${misc:Depends},
- busybox (>= 1:1.9.1-2),
+ busybox,
  distro-defaults,
  initramfs-tools (>= 0.40)
 Suggests: lvm2,
