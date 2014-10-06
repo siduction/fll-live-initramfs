@@ -45,6 +45,9 @@ manual_add_modules aufs
 manual_add_modules squashfs
 manual_add_modules loop
 
+# thin-provisionig
+manual_add_modules dm-thin-pool
+
 # ms filesystem drivers
 manual_add_modules vfat
 manual_add_modules ntfs
