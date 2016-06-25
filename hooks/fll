@@ -8,7 +8,7 @@
 # License:	GPLv2
 #
 # F.U.L.L.S.T.O.R.Y Project Homepage:
-# http://developer.berlios.de/projects/fullstory
+# https://github.com/fullstory
 ###############################################################################
 
 # initramfs-tools prerequisite handling
@@ -40,6 +40,7 @@ manual_add_modules ehci-pci
 # filesystem unioning modules
 manual_add_modules unionfs
 manual_add_modules aufs
+manual_add_modules overlay
 
 # squashfs and loop
 manual_add_modules squashfs

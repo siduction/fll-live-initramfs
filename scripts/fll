@@ -5,11 +5,11 @@
 #
 #	Copyright:	© 2007-2010 Kel Modderman <kel@otaku42.de>
 #			© 2006-2014 Stefan Lippers-Hollmann <s.l-h@gmx.de>
-#			© 2007-2012 Niall Walsh <niallwalsh@users.berlios.de>
+#			© 2007-2014 Niall Walsh <niallwalsh@celtux.org>
 #	License:	GPLv2
 #
 #	F.U.L.L.S.T.O.R.Y Project Homepage:
-#	http://developer.berlios.de/projects/fullstory
+#	https://github.com/fullstory
 #
 #	This script snippet needs to get executed under busybox sh, due to
 #	using awk; klibc sh doesn't provide an awk implementation
@@ -111,6 +111,26 @@ fll_finger_fstype()
 	fi
 
 	unset FSTYPE
+	return 1
+}
+
+###############################################################################
+# 	identify label of block device, fallback to gpt partlabel
+###############################################################################
+fll_finger_label()
+{
+	LABEL="$(/sbin/blkid -s LABEL -o value ${1})"
+
+	if [ -n "${LABEL}" ] ; then
+		export LABEL
+		return 0
+	fi
+	LABEL="$(/sbin/blkid -s PARTLABEL -o value ${1})"
+	if [ -n "${LABEL}" ] ; then
+		export LABEL
+		return 0
+	fi
+	unset LABEL
 	return 1
 }
 
@@ -504,11 +524,6 @@ mountroot()
 			toram)
 				FLL_TORAM="yes"
 				;;
-			unionfs|aufs)
-				# set FLL_UNION_MODULE in default/distro if needed
-				# current default is dmsetup
-				FLL_UNION_MODULE="${opt}"
-				;;
 			console=ttyS*,*)
 				# parse out port and speed
 				FLL_SERIAL="${opt#console=}"
@@ -608,7 +623,7 @@ mountroot()
 			#			  loop is broken
 			# FLL_MEDIA_FOUND	- set only when we have the live media compressed
 			#			  filesystem located and mounted
-			unset FLL_BLOCKMNT FLL_DOUMOUNT FLL_DOMOVEMOUNT FLL_MEDIA_FOUND
+			unset FLL_BLOCKMNT FLL_PROBE FLL_DOUMOUNT FLL_DOMOVEMOUNT FLL_MEDIA_FOUND FLL_2FS
 
 			#
 			# determine filesystem type of block device
@@ -620,19 +635,28 @@ mountroot()
 				fi
 				printf "[ ${dev#/dev/} ] "
 
-				# we have determined FSTYPE of the device, set FLL_BLOCKMNT
+				# we have determined FSTYPE of the wrapper device, set FLL_BLOCKMNT
 				FLL_BLOCKMNT="/fll/${dev##*/}"
+				FLL_PROBE="${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}"
+				if [ "${FSTYPE}" = "squashfs" ]; then
+					fll_finger_label "${dev}" >/dev/null 2>&1
+					if [ "${LABEL}" = "${FLL_UUID}.${FLL_IMAGE_LOCATION#*\.}" ]; then
+						FLL_BLOCKMNT="${FLL_MOUNTPOINT}"
+						FLL_PROBE="${dev}"
+					elif [ "${LABEL}" = "${FLL_UUID}.2" ]; then
+						FLL_2FS="${dev}"
+					fi
+				fi
 				mkdir -p "${FLL_BLOCKMNT}"
-
 				# mount block device on FLL_BLOCKMNT for probe
 				if fll_mount "${FSTYPE}" "${dev}" "${FLL_BLOCKMNT}" ro; then
 					# add current FLL_BLOCKMNT to FLL_DOMOVEMOUNT stack
 					FLL_DOMOVEMOUNT="${FLL_BLOCKMNT} ${FLL_DOMOVEMOUNT}"
 
 					#
-					# probe for iso image
+					# probe for iso image unless already have media
 					#
-					if [ "${FLL_FROMISO}" = "yes" ]; then
+					if [ ! -e "${FLL_PROBE}" ] && [ "${FLL_FROMISO}" = "yes" ]; then
 						if [ -f "${FLL_BLOCKMNT}/${FLL_MEDIA_NAME#/}" ]; then
 							# located iso, update dev description
 							FLL_MEDIA_FOUND="${dev}"
@@ -657,6 +681,8 @@ mountroot()
 									# update FLL_BLOCKMNT, FLL_DOMOVEMOUNT stack
 									FLL_BLOCKMNT="/fll/fromiso"
 									FLL_DOMOVEMOUNT="${FLL_BLOCKMNT} ${FLL_DOMOVEMOUNT}"
+									# update FLL_PROBE as FLL_BLOCKMNT changed
+									FLL_PROBE="${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}"
 								else
 									fll_umount ${FLL_DOUMOUNT}
 									panic "Failed to mount ${FSTYPE} filesystem from iso image"
@@ -668,11 +694,10 @@ mountroot()
 							printf "\n"
 						fi
 					fi
-
 					#
 					# probe for compressed filesystem
 					#
-					if [ -f "${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}" ]; then
+					if [ -e "${FLL_PROBE}" ] ; then
 						# found FLL compressed filesystem
 						# set/update FLL_MEDIA_FOUND variable (possibly already set via fromiso)
 						if [ -z "${FLL_MEDIA_FOUND}" ]; then
@@ -685,20 +710,32 @@ mountroot()
 
 						# md5sum check
 						if [ "${FLL_MD5SUM_CHECK}" = "yes" ]; then
+							MAINFS="${FSTYPE}"
+							if [ -b "${FLL_PROBE}" ]; then
+								umount "${FLL_BLOCKMNT}"
+								if fll_finger_fstype "${FLL_PROBE%%[1234567890]*}" >dev/null 2>&1; then
+									fll_mount "${FSTYPE}" "${FLL_PROBE%%[1234567890]*}" "${FLL_BLOCKMNT}" ro
+									FSTYPE="${MAINFS}"
+									MAINFS=""
+								fi
+							fi
 							printf "Performing md5sum integrity check of live media...\n\n"
-
 							if fll_md5sum_check ${FLL_BLOCKMNT}; then
 								printf "All md5sums verified successfully.\n\n"
 							else
 								fll_umount ${FLL_DOUMOUNT}
 								panic "Failed md5sum check!"
 							fi
+							if [ -z "${MAINFS}" ]; then
+								umount "${FLL_BLOCKMNT}"
+								fll_mount "${FSTYPE}" "${FLL_PROBE}" "${FLL_BLOCKMNT}" ro
+							fi
 						fi
 
 						#
 						# prepare live filesystem
 						#
-						if fll_finger_fstype "${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}" >/dev/null 2>&1; then
+						if fll_finger_fstype "${FLL_PROBE}" >/dev/null 2>&1; then
 							printf "Detected live ${FSTYPE} "
 							if [ "${FLL_FROMISO}" = "yes" ]; then
 								printf "filesystem on ${FLL_MEDIA_NAME}\n"
@@ -706,18 +743,47 @@ mountroot()
 								printf "filesystem on ${FLL_MEDIA_FOUND}\n"
 							fi
 
+							# find secondary squashfs if we didn't pick it up already
+							if [ -z "${FLL_2FS}" ]; then
+								if [ -f "${FLL_PROBE}" ]; then
+									FLL_2FS="${FLL_PROBE%.*}.2"
+								else
+									MAINFS="${FSTYPE}"
+									printf "Checking ${FLL_PROBE%%[1234567890]*}* for 2nd squashfs..."
+									for testfs in ${FLL_PROBE%%[1234567890]*}*; do
+										if fll_finger_fstype "${testfs}" >/dev/null 2>&1; then
+											if [ "${FSTYPE}" = "squashfs" ]; then
+												fll_finger_label "${testfs}" >/dev/null 2>&1
+												if [ "${LABEL}" = "${FLL_UUID}.2" ]; then
+													FLL_2FS="${testfs}"
+													printf "found on ${testfs}"
+													continue
+												fi
+											fi
+										fi
+									done
+									FSTYPE="${MAINFS}"
+									if [ -z "${FLL_2FS}" ]; then
+										printf "none present"
+									fi
+									printf "\n"
+								fi
+							fi
+
 							# copy to tmpfs
 							if [ "${FLL_TORAM}" = "yes" ]; then
 								# required tmpfs size: compressed filesystem size + 10% buffer
 								eval $(fll_meminfo)
 
-								# ls -l returns units in Bytes, divide by (1024*1024) to convert to MB
-								FLL_TORAM_FSSIZE=$(ls -l "${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}" | \
-									awk '{ printf("%d\n", int($5 * 1.1 / 1048576)) }')
+								if [ -f "${FLL_PROBE}" ]; then
+									FLL_TORAM_FSSIZE=$(du -m "${FLL_PROBE}" "${FLL_2FS}" | awk -v c=0 '{c+=$1}END{print int(c * 1.1) }')
+								else
+									FLL_TORAM_FSSIZE=$(df -m "${FLL_PROBE}" | awk '/^\//{print int($2 * 1.2) }')
+								fi
 
 								# memory required to operate normally after iso has consumed memory
-								# at least 32M is required
-								FLL_TORAM_MEMREQ=$(( ${FLL_TORAM_FSSIZE} + 32 ))
+								# at least 256M is required for sanity
+								FLL_TORAM_MEMREQ=$(( ${FLL_TORAM_FSSIZE} + 256 ))
 
 								# do we have enough free memory for toram?
 								if [ "${MEMFREE}" -gt "${FLL_TORAM_MEMREQ}" ]; then
@@ -728,10 +794,35 @@ mountroot()
 
 									# copy compressed filesystem to tmpfs
 									printf "Copying live filesystem from ${dev#/dev/} to ram...\n"
-									if fll_copy_with_perc "${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}" "/fll/toram/${FLL_IMAGE_DIR}"; then
-										# add old mount point to umount stack, update FLL_BLOCKMNT
-										FLL_DOUMOUNT="${FLL_BLOCKMNT} ${FLL_DOUMOUNT}"
+									if [ -f "${FLL_PROBE}" ]; then
+										toramcmd="fll_copy_with_perc ${FLL_PROBE} /fll/toram/${FLL_IMAGE_DIR}"
+									else
+										toramcmd="cp ${FLL_PROBE} /fll/toram/${FLL_IMAGE_LOCATION}"
+										printf "... copy about to start without progress, please wait.\n"
+									fi
+									if $toramcmd; then
+										toramcmd=""
+										if [ -f "${FLL_2FS}" ]; then
+											printf "Copying 2nd filesystem from ${FLL_2FS} to ram..."
+											fll_copy_with_perc "${FLL_2FS}" "/fll/toram/${FLL_IMAGE_DIR}/"
+											printf "done\n"
+											FLL_2FS="/fll/toram/${FLL_IMAGE_DIR}/${FLL_IMAGE_FILE%.*}.2"
+										elif [ -n "${FLL_2FS}" ]; then
+											printf "Copying 2nd filesystem from ${FLL_2FS} to ram..."
+											cp "${FLL_2FS}" "/fll/toram/${FLL_IMAGE_DIR}/${FLL_IMAGE_FILE%.*}.2"
+											printf "done\n"
+											FLL_2FS="/fll/toram/${FLL_IMAGE_DIR}/${FLL_IMAGE_FILE%.*}.2"
+										fi
+										if [ "${FLL_BLOCKMNT}" = "${FLL_MOUNTPOINT}" ]; then
+											# umount the direct squashfs partition
+											fll_umount "${FLL_BLOCKMNT}"
+										else
+											# add old mount point to umount stack
+											FLL_DOUMOUNT="${FLL_BLOCKMNT} ${FLL_DOUMOUNT}"
+										fi
+										# update FLL_BLOCKMNT
 										FLL_BLOCKMNT="/fll/toram"
+										FLL_PROBE="${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}"
 										FLL_DOMOVEMOUNT="${FLL_BLOCKMNT} ${FLL_DOMOVEMOUNT}"
 									else
 										if [ "${FLL_FROMISO}" = "yes" ]; then
@@ -757,23 +848,15 @@ mountroot()
 							fi
 
 							# mount compressed filesystem, source directory: FLL_BLOCKMNT
-							mkdir -p "${FLL_MOUNTPOINT}"
-							if [ -n "${FLL_UNION_MODULE}" ] && [ "${FLL_UNION_MODULE}" != "dmsetup" ] && fll_mount "${FSTYPE}" "${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}" "${FLL_MOUNTPOINT}"; then
-								printf "Mounted ${FSTYPE} filesystem on ${FLL_MOUNTPOINT}\n\n"
-								FLL_DOMOVEMOUNT="${FLL_MOUNTPOINT} ${FLL_DOMOVEMOUNT}"
-							elif [ -z "${FLL_UNION_MODULE}" ] || [ "${FLL_UNION_MODULE}" = "dmsetup" ]; then
-								mkdir -p "${FLL_MOUNTPOINT}.mnt"
-
-								if fll_mount "${FSTYPE}" "${FLL_BLOCKMNT}/${FLL_IMAGE_LOCATION}" "${FLL_MOUNTPOINT}.mnt" ; then
-									printf "Mounted ${FSTYPE} filesystem on ${FLL_MOUNTPOINT}.mnt\n\n"
-									FLL_DOMOVEMOUNT="${FLL_MOUNTPOINT}.mnt ${FLL_DOMOVEMOUNT}"
+							if [ ! -d "${FLL_MOUNTPOINT}" ]; then
+								mkdir -p "${FLL_MOUNTPOINT}"
+								if fll_mount "${FSTYPE}" "${FLL_PROBE}" "${FLL_MOUNTPOINT}"; then
+									printf "Mounted ${FSTYPE} filesystem on ${FLL_MOUNTPOINT}\n\n"
+									FLL_DOMOVEMOUNT="${FLL_MOUNTPOINT} ${FLL_DOMOVEMOUNT}"
 								else
 									fll_umount ${FLL_DOUMOUNT}
 									panic "Failed to mount ${FSTYPE} filesystem"
 								fi
-							else
-								fll_umount ${FLL_DOUMOUNT}
-								panic "Failed to mount ${FSTYPE} filesystem"
 							fi
 						else
 							fll_umount ${FLL_DOUMOUNT}
@@ -785,7 +868,6 @@ mountroot()
 					fi
 				fi
 			fi
-
 			# umount mount points in FLL_DOUMOUNT stack
 			fll_umount ${FLL_DOUMOUNT}
 
@@ -812,79 +894,65 @@ mountroot()
 	# debug checkpoint
 	maybe_break fll-postmount
 
+	# mount secondary squashfs if we have one
+	if [ -n "${FLL_2FS}" ]; then
+		mkdir "${FLL_MOUNTPOINT}.2"
+		FLL_DOMOVEMOUNT="${FLL_MOUNTPOINT}.2 ${FLL_DOMOVEMOUNT}"
+		fll_mount squashfs "${FLL_2FS}" "${FLL_MOUNTPOINT}.2" ro
+		#mount -t squashfs "${FLL_2FS}" "${FLL_MOUNTPOINT}.2"
+	fi
+
+
 	#
 	# prepare COW union filesystem
 	#
-	FLL_SNAP_DEV="/dev/mapper/${FLL_DISTRO_NAME}-snapshot"
 
-	if [ -z "${FLL_UNION_MODULE}" ] || [ "${FLL_UNION_MODULE}" = "dmsetup" ]; then
-		# use losetup and dmsetup to create root snapshot
-		if ! [ -b ${FLL_SNAP_DEV} ]; then
-			# TODO size
-			mkdir -p /run/fll
-			dd if=/dev/zero of=/run/fll/snapshot bs=1M count=1 seek=511 2>/dev/null
-			FLL_SNAP_DEV=$(losetup -f)
-			losetup ${FLL_SNAP_DEV} /run/fll/snapshot
-		fi
+	# aufs || overlay
+	if [ ! -d /sys/module/overlay ] && [ ! -d /sys/module/aufs ]; then
+		modprobe "${MODPROBE_OPTIONS}" overlay >/dev/null 2>&1 || \
+			modprobe "${MODPROBE_OPTIONS}" aufs >/dev/null 2>&1
+	fi
 
-		FLL_ROOT_SIZE=$(ls -l "${FLL_MOUNTPOINT}.mnt/${FLL_IMAGE_FILE}" | awk '{print $5}')
-		FLL_ROOT_DMSIZE=$((${FLL_ROOT_SIZE}/512))
-		FLL_IMAGE_DEV=$(losetup -f)
+	if [ -d /sys/module/overlay ]; then
+		FLL_UNION_MODULE="overlay"
+	elif [ -d /sys/module/aufs ]; then
+		FLL_UNION_MODULE="aufs"
+	fi
 
-		losetup ${FLL_IMAGE_DEV} "${FLL_MOUNTPOINT}.mnt/${FLL_IMAGE_FILE}"
+	# unioned filesystem mount points
+	FLL_UNION_COWDIR="/fll/cow"
 
-		FLL_DM_MAP="0 ${FLL_ROOT_DMSIZE} snapshot ${FLL_IMAGE_DEV} ${FLL_SNAP_DEV} P 8"
-
-		dmsetup create ${FLL_DISTRO_NAME}-live --table "${FLL_DM_MAP}"
-
-		# TODO FS ??? DONE
-		if fll_finger_fstype /dev/mapper/${FLL_DISTRO_NAME}-live >/dev/null 2>&1 ; then
-			if ! mount -t ${FSTYPE} /dev/mapper/${FLL_DISTRO_NAME}-live ${rootmnt} ; then
-				panic "Failed to mount live filesystem"
-			fi
-		else
-			panic "Failed to recognise type of live filesystem"
-		fi
-
-		mkdir -p "${rootmnt}/${FLL_MOUNTPOINT}"
+	# prepare COW union filesystem
+	mkdir -p "${FLL_UNION_COWDIR}"
+	#
+	# mount a tmpfs over FLL_UNION_COWDIR, reserving 10% system memory
+	# Note: $rootmnt must be mounted with a fs != rootfs prior to run-init
+	#
+	printf "Mounting virtual memory tmpfs filesystem on ${FLL_UNION_COWDIR}..."
+	if mount -n -t tmpfs -o size=90%,mode=755 tmpfs "${FLL_UNION_COWDIR}"; then
+		printf "\n"
 	else
-		#aufs || unionfs
-		modprobe "${MODPROBE_OPTIONS}" "${FLL_UNION_MODULE}" >/dev/null 2>&1
+		panic "Failed to mount tmpfs over ${rootmnt}"
+	fi
+	FLL_DOMOVEMOUNT="${FLL_DOMOVEMOUNT} ${FLL_UNION_COWDIR}"
 
-		# unioned filesystem mount points
-		FLL_UNION_COWDIR="/fll/cow"
+	# union module specific options
+	case "${FLL_UNION_MODULE}" in
+		aufs)
+			FLL_UNION_OPTIONS="br:${FLL_UNION_COWDIR}:${FLL_MOUNTPOINT}"
+			;;
+		overlay)
+			FLL_UNION_OPTIONS="lowerdir=${FLL_MOUNTPOINT},upperdir=${FLL_UNION_COWDIR}/upper,workdir=${FLL_UNION_COWDIR}/work"
+			mkdir ${FLL_UNION_COWDIR}/upper ${FLL_UNION_COWDIR}/work
+			;;
+	esac
 
-		# prepare COW union filesystem
-		mkdir -p "${FLL_UNION_COWDIR}"
-		#
-		# mount a tmpfs over FLL_UNION_COWDIR, reserving 10% system memory
-		# Note: $rootmnt must be mounted with a fs != rootfs prior to run-init
-		#
-		printf "Mounting virtual memory tmpfs filesystem on ${FLL_UNION_COWDIR}..."
-		if mount -n -t tmpfs -o size=90%,mode=755 tmpfs "${FLL_UNION_COWDIR}"; then
-			printf "\n"
-		else
-			panic "Failed to mount tmpfs over ${rootmnt}"
-		fi
-		FLL_DOMOVEMOUNT="${FLL_DOMOVEMOUNT} ${FLL_UNION_COWDIR}"
-
-		# union module specific options
-		case "${FLL_UNION_MODULE}" in
-			aufs)
-				FLL_UNION_OPTIONS="br:${FLL_UNION_COWDIR}:${FLL_MOUNTPOINT}"
-				;;
-			unionfs)
-				FLL_UNION_OPTIONS="dirs=${FLL_UNION_COWDIR}=rw:${FLL_MOUNTPOINT}=ro"
-				;;
-		esac
-
-		# mount the union COW filesystem
-		printf "Mounting ${FLL_UNION_MODULE} union filesystem..."
-		if mount -t "${FLL_UNION_MODULE}" -o "${FLL_UNION_OPTIONS}" "${FLL_UNION_MODULE}" "${rootmnt}"; then
-			printf "\n"
-		else
-			panic "Failed to prepare ${FLL_UNION_MODULE} union filesystem"
-		fi
+	# mount the union COW filesystem
+	printf "Mounting ${FLL_UNION_MODULE} union filesystem..."
+	if mount -t "${FLL_UNION_MODULE}" -o "${FLL_UNION_OPTIONS}" "${FLL_UNION_MODULE}" "${rootmnt}"; then
+		printf "\n"
+	else
+		panic "Failed to prepare ${FLL_UNION_MODULE} union filesystem"
 	fi
 
 	# move all mounts in FLL_DOMOVEMOUNT stack to $rootmnt

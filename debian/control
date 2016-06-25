@@ -1,18 +1,20 @@
 Source: fll-live-initramfs
+Maintainer: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+Uploaders: Niall Walsh <niallwalsh@celtux.org>,
+           Alf Gaida <agaida@siduction.org>
 Section: misc
 Priority: extra
-Maintainer: Alf Gaida <agaida@siduction.org>
-Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.5
-Vcs-git: git://github.com/fullstory/fll-live-initramfs.git
+Build-Depends: debhelper (>= 9.20120115)
+Standards-Version: 3.9.8
 Vcs-Browser: https://github.com/fullstory/fll-live-initramfs
+Vcs-Git: git://github.com/fullstory/fll-live-initramfs.git
 
 Package: fll-live-initramfs
 Architecture: all
 Depends: ${misc:Depends},
  busybox,
  distro-defaults,
- initramfs-tools (>= 0.40)
+ initramfs-tools
 Suggests: lvm2,
  nbd-client
 Description: fll live media initramfs glue

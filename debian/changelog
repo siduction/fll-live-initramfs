@@ -1,77 +1,262 @@
-fll-live-initramfs (2014.10.06) unstable; urgency=medium
+fll-live-initramfs (2.9.14) unstable; urgency=medium
 
-  * remove the thin-pool hook, add the module dm-thin-...
+  [ Stefan Lippers-Hollmann ]
+  * NOT RELEASED YET
 
- -- Alf Gaida <agaida@siduction.org>  Sun, 05 Oct 2014 22:56:55 +0200
+  [ Alf Gaida ]
+  * release it, only two siduction changes, ehci and thin-prov
 
-fll-live-initramfs (2014.10.05) unstable; urgency=medium
+ -- Alf Gaida <agaida@siduction.org>  Sat, 25 Jun 2016 13:38:20 +0200
 
-  * make all hooks executable 
+fll-live-initramfs (2.9.13) unstable; urgency=medium
 
- -- Alf Gaida <agaida@siduction.org>  Sun, 05 Oct 2014 19:12:12 +0200
+  * fix lintian warning:
+    command-with-path-in-maintainer-script postinst: /usr/sbin/update-initramfs
+    rely on $(which update-initramfs) instead.
 
-fll-live-initramfs (2014.09.27) unstable; urgency=medium
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 12 Mar 2016 02:46:10 +0100
 
-  * install all hooks
+fll-live-initramfs (2.9.12) unstable; urgency=medium
 
- -- Alf Gaida <agaida@siduction.org>  Sat, 27 Sep 2014 23:49:34 +0200
+  * fix F.U.L.L.S.T.O.R.Y. homepage URL.
 
-fll-live-initramfs (2014.09.07) unstable; urgency=medium
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 12 Mar 2016 02:43:23 +0100
 
-  * merging upstream
+fll-live-initramfs (2.9.11) unstable; urgency=medium
 
- -- Alf Gaida <agaida@siduction.org>  Sun, 07 Sep 2014 00:57:41 +0200
+  * remove the udevadm trigger+settle dance again for testing, this should be
+    fixed in udev 221.
 
-fll-live-initramfs (2013.11.27) unstable; urgency=low
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 04 Jul 2015 23:15:40 +0200
 
-  * transfer to unstable, no further changes
+fll-live-initramfs (2.9.10) unstable; urgency=medium
 
- -- Alf Gaida <agaida@siduction.org>  Thu, 28 Nov 2013 21:56:57 +0100
+  * for now run udevadm trigger+settle in scripts/fll (for single-core
+    systems).
 
-fll-live-initramfs (2013.10.09) next; urgency=low
+ -- Niall Walsh <niallwalsh@celtux.org>  Fri, 19 Jun 2015 04:54:59 +0100
 
-  * sync with fullstory
-  * new numbering
-  * new copyright format
+fll-live-initramfs (2.9.9) unstable; urgency=medium
 
- -- Alf Gaida <agaida@siduction.org>  Wed, 09 Oct 2013 21:25:12 +0200
+  * revert running scripts/init-top/udev for testing, udev seems to be fixed.
 
-fll-live-initramfs (2.6.9) unstable; urgency=low
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 19 Jun 2015 00:34:12 +0200
 
-  * revert changes in debian/postinst
-  * add ehci-pci module to hook functions
+fll-live-initramfs (2.9.8) unstable; urgency=medium
 
- -- siduction builders <packaging@siduction.org>  Thu, 28 Feb 2013 07:29:56 +0100
+  * run scripts/init-top/udev (again) from scripts/fll as it appears to
+    be running too early.
 
-fll-live-initramfs (2.6.8.1) unstable; urgency=low
+ -- Niall Walsh <niallwalsh@celtux.org>  Tue, 09 Jun 2015 20:19:10 +0100
 
-  * add ehci-pci to modules to build in initramfs
+fll-live-initramfs (2.9.7) unstable; urgency=medium
 
- -- Torsten Wohlfarth <towo@siduction.org>  Wed, 27 Feb 2013 21:00:41 +0100
+  * drop versioned dependency on initramfs-tools, it's provided by all
+    relevant Debian releases.
 
-fll-live-initramfs (2.6.8) unstable; urgency=low
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 04 Jan 2015 01:34:26 +0100
 
-  * fixed another typo in debian/postinst
+fll-live-initramfs (2.9.6) unstable; urgency=medium
 
- -- Torsten Wohlfarth <towo@siduction.org>  Wed, 27 Feb 2013 20:09:29 +0100
+  * bump standards version to 3.9.6, no changes necessary.
+  * convert to machine readable copyright.
 
-fll-live-initramfs (2.6.7) unstable; urgency=low
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 03 Jan 2015 19:56:56 +0100
 
-  * fixed the typo in debian/postinst
+fll-live-initramfs (2.9.5) unstable; urgency=medium
 
- -- Torsten Wohlfarth <towo@siduction.org>  Wed, 27 Feb 2013 19:15:13 +0100
+  * get rid of the extraneous -v for awk left behind in the last change.
 
-fll-live-initramfs (2.6.6) unstable; urgency=low
+ -- Niall Walsh <niallwalsh@celtux.org>  Sun, 21 Dec 2014 23:43:19 +0000
 
-  * added a fix for not working usb-boot
+fll-live-initramfs (2.9.4) unstable; urgency=medium
 
- -- Torsten Wohlfarth <towo@siduction.org>  Wed, 27 Feb 2013 18:53:23 +0100
+  * fix toram typo and tweak figures to be more caustiously realistic.
 
-fll-live-initramfs (2.6.5) unstable; urgency=low
+ -- Niall Walsh <niallwalsh@celtux.org>  Sun, 21 Dec 2014 22:49:40 +0000
 
-  * source override added to prevent lintian complaining aubout 
-    XSBC_original-Maintainer
-  * fixes #642
+fll-live-initramfs (2.9.3) unstable; urgency=medium
+
+  * fix broken awk in detection of toram size and count both squashfs sizes.
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Sun, 21 Dec 2014 14:34:34 +0000
+
+fll-live-initramfs (2.9.2) unstable; urgency=medium
+
+  * fixup md5sum for fromhd squashfs partition case.
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Mon, 08 Dec 2014 19:49:01 +0000
+
+fll-live-initramfs (2.9.1) unstable; urgency=medium
+
+  * mount up secondary squashfs and fixup toram.
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Mon, 08 Dec 2014 02:05:44 +0000
+
+fll-live-initramfs (2.9.0) unstable; urgency=medium
+
+  * s/overlayfs/overlay/.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 22 Nov 2014 18:32:03 +0100
+
+fll-live-initramfs (2.8.3) unstable; urgency=medium
+
+  * fix fix logic error when detecting the unioning method once more.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 28 Oct 2014 13:29:25 +0100
+
+fll-live-initramfs (2.8.2) unstable; urgency=medium
+
+  * fix logic error when detecting the unioning method.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 28 Oct 2014 13:10:58 +0100
+
+fll-live-initramfs (2.8.1) unstable; urgency=medium
+
+  * detect the available FLL_UNION_MODULE automatically.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 28 Oct 2014 06:10:30 +0100
+
+fll-live-initramfs (2.8.0) unstable; urgency=medium
+
+  * (re-)indent code and add overlayfs cheatcode.
+  * drop dmsetup code.
+  * drop unionfs code.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 28 Oct 2014 02:49:26 +0100
+
+fll-live-initramfs (2.7.19) unstable; urgency=medium
+
+  * fixup toram fssize and handling of mount juggling.
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Mon, 27 Oct 2014 22:58:07 +0000
+
+fll-live-initramfs (2.7.18) unstable; urgency=medium
+
+  * add overlayfs support.
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Sun, 26 Oct 2014 23:05:17 +0000
+
+fll-live-initramfs (2.7.17) unstable; urgency=medium
+
+  * allow squashfs under gpt partlabel matching uuid as discovered device.
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Wed, 22 Oct 2014 14:19:42 +0100
+
+fll-live-initramfs (2.7.16) unstable; urgency=medium
+
+  * drop support for classic persistence.
+  * add udev override handling and setting the hostname into the initramfs
+    hook.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 30 Aug 2014 23:04:26 +0200
+
+fll-live-initramfs (2.7.15) unstable; urgency=medium
+
+  * drop special handling for /etc/machine-id, it's now handled via pyfll
+    itself.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 22 Jun 2014 23:08:49 +0200
+
+fll-live-initramfs (2.7.14) unstable; urgency=medium
+
+  * debian/control: switch Vcs tags to github.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 13 Apr 2014 22:18:59 +0200
+
+fll-live-initramfs (2.7.13) unstable; urgency=low
+
+  * generate a unique machine id for systemd.
+  * bump standards version to 3.9.5, no changes necessary.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 02 Mar 2014 18:00:10 +0100
+
+fll-live-initramfs (2.7.12) unstable; urgency=low
+
+  * selinuxfs is now mounted at /sys/fs/selinux/, don't create /selinux/
+    anymore.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 07 May 2013 18:26:53 +0200
+
+fll-live-initramfs (2.7.11) unstable; urgency=low
+
+  * update FSF postal address to be URLs.
+  * bump standards version to 3.9.4, no changes necessary.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 12 Jan 2013 02:34:06 +0100
+
+fll-live-initramfs (2.7.10) unstable; urgency=low
+
+  * drop versioned dependency on busybox.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 06 Aug 2012 00:25:46 +0200
+
+fll-live-initramfs (2.7.9) unstable; urgency=low
+
+  * busybox 1:1.20.0-5 fixes the previous problems (#679377) with awk and PATH
+    unset, bump dependency accordingly and revert the no longer required
+    workaround.
+  * don't complain if /tmp/ already exists.
+  * rework coding style (whitespace/ comment cleanup).
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 08 Jul 2012 16:25:45 +0200
+
+fll-live-initramfs (2.7.8) unstable; urgency=low
+
+  * work around #679377 by prepending busybox to all awk instances, thanks to
+    Michael Tokarev <mjt@tls.msk.ru>.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 06 Jul 2012 04:02:44 +0200
+
+fll-live-initramfs (2.7.7) unstable; urgency=low
+
+  * move --noclear hacking into the builder.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 15 Jun 2012 00:31:28 +0200
+
+fll-live-initramfs (2.7.6) unstable; urgency=low
+
+  * default to --no-clear for the live-system, this is reverted for the
+    installed system by fll-installer.
+  * avoid multiple --no-clear lines on persistent live systems.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 05 Jun 2012 23:20:41 +0200
+
+fll-live-initramfs (2.7.5) unstable; urgency=low
+
+  * Clear FLL_PERSIST_BLOCKMNT when persisting to a file (i.e. on fat)
+  * FLL_COWDIR is /fll/persist when persisting to a file
+  * Change test for persist to just use FLL_PERSIST (now _BLOCKMNT is cleared)
+
+ -- Niall Walsh <niallwalsh@users.berlios.de>  Mon, 26 Mar 2012 15:57:48 +0100
+
+fll-live-initramfs (2.7.4) unstable; urgency=low
+
+  [ Niall Walsh ]
+  * make serial work on runlevels 4,5 so you can "debug" X a bit
+  * use FLL_PERSIST_BLOCKMNT in aufs/unionfs setup
+
+  [ Stefan Lippers-Hollmann ]
+  * use safer variable checking.
+  * add live-only option to not clear ttys (cheatcode "getty=noclear").
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 25 Mar 2012 22:20:45 +0200
+
+fll-live-initramfs (2.7.3) unstable; urgency=low
+
+  * Add console=ttyS (serial) support
+
+ -- Niall Walsh <niallwalsh@users.berlios.de>  Sun, 25 Mar 2012 17:55:28 +0100
+
+fll-live-initramfs (2.7.2) unstable; urgency=low
+
+  * Mount union on / instead of FLL_BLOCKMNT
+
+ -- Niall Walsh <niallwalsh@users.berlios.de>  Sun, 25 Mar 2012 17:26:02 +0100
+
+fll-live-initramfs (2.7.1) unstable; urgency=low
+
+  * bump standards version to 3.9.3, no changes necessary.
 
  -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 23 Feb 2012 16:19:22 +0100
 
