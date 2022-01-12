@@ -1,3 +1,9 @@
+fll-live-initramfs (2.9.15.2) unstable; urgency=medium
+
+  * new version without calamares changes
+
+ -- Alf Gaida <agaida@siduction.org>  Wed, 25 Jan 2017 00:20:43 +0100
+
 fll-live-initramfs (2.9.14) unstable; urgency=medium
 
   [ Stefan Lippers-Hollmann ]
