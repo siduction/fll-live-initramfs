@@ -43,7 +43,6 @@ fll_finger_blockdevs()
 		' /proc/sys/dev/cdrom/info)
 
 		echo "${FINGERED}"
-		return
 	fi
 
 	#

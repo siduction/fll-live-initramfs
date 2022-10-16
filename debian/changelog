@@ -1,3 +1,9 @@
+fll-live-initramfs (2.9.16) unstable; urgency=medium
+
+  * repair detection of live medium
+
+ -- Torsten Wohlfarth <towo@siduction.org>  Sun, 16 Oct 2022 13:53:12 +0200
+
 fll-live-initramfs (2.9.15.2) unstable; urgency=medium
 
   * new version without calamares changes
